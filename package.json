@@ -1,0 +1,17 @@
+{
+  "name": "doublesidedprint",
+  "version": "1.0.0",
+  "description": "Split a PDF in 2 PDF for even and odd pages",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "danidinogo",
+  "license": "ISC",
+  "dependencies": {
+    "@pdf-lib/fontkit": "^1.1.1",
+    "node-fetch": "^2.6.1",
+    "node-pdftk": "^2.1.3",
+    "pdf-lib": "^1.16.0"
+  }
+}

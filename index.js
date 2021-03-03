@@ -5,7 +5,7 @@ const fetch = require('node-fetch'),
     rgb = PDFLib.rgb,
     fontkit = require('@pdf-lib/fontkit');
 
-async function main(offset=0) {
+async function main(offset=0, pagination=true) {
     const inDoc = await PDFDocument.load(fs.readFileSync('./in/in.pdf'), {ignoreEncryption: true}),
         first = await PDFDocument.create(),
         second = await PDFDocument.create();
@@ -13,7 +13,9 @@ async function main(offset=0) {
     let pages = inDoc.getPages();
     await new Promise(async res => {
         for(let i=offset, z=0;i<pages.length;i++, z++) {
-            pages[i] = await process_page(inDoc, i);
+            if(pagination) {
+                pages[i] = await add_pagination(inDoc, i, z+1);
+            }
             if(z%2===0) {
                 let [evenPage] = await first.copyPages(inDoc, [i]);
                 first.addPage(evenPage);
@@ -35,6 +37,25 @@ async function main(offset=0) {
         console.log(e);
     });
 }
+
+async function add_pagination(pdfDoc, pageIndex, pageNumber) {
+    const fontBytes = await fetch('https://pdf-lib.js.org/assets/ubuntu/Ubuntu-R.ttf').then(res => res.arrayBuffer());
+    pdfDoc.registerFontkit(fontkit);
+    const customFont = await pdfDoc.embedFont(fontBytes);
+
+    let page = pdfDoc.getPages()[pageIndex];
+
+    page.drawText(pageNumber.toString(), {
+        x: 550,
+        y: 50,
+        size: 35,
+        font: customFont,
+        color: rgb(0, 0.53, 0.71),
+      })
+    return page;
+}
+
+
 let offset = 0;
 if(process.argv.includes('--offset')||process.argv.includes('-o')) {
     offset = process.argv.indexOf('--offset');
@@ -42,29 +63,11 @@ if(process.argv.includes('--offset')||process.argv.includes('-o')) {
     offset = process.argv[offset+1]!==undefined ? process.argv[offset+1] : 0;
     offset = parseInt(offset)>0 ? offset : 0;
 }
-async function process_page(pdfDoc, pageIndex) {
-    const fontBytes = await fetch('https://pdf-lib.js.org/assets/ubuntu/Ubuntu-R.ttf').then(res => res.arrayBuffer());
-    pdfDoc.registerFontkit(fontkit);
-    const customFont = await pdfDoc.embedFont(fontBytes);
-
-    let page = pdfDoc.getPages()[pageIndex],
-        pageNumber = pageIndex + 1;
-
-    page.drawText(pageNumber.toString(), {
-        x: 40,
-        y: 450,
-        size: 35,
-        font: customFont,
-        color: rgb(0, 0.53, 0.71),
-      })
-    page.drawRectangle({
-        x: 800,
-        y: 800,
-        width: customFont.widthOfTextAtSize(pageNumber.toString(), 35),
-        height: customFont.heightAtSize(35),
-        borderColor: rgb(1, 0, 0),
-        borderWidth: 1.5,
-    });
-    return page;
+let pagination = true;
+if(process.argv.includes('--pagination')||process.argv.includes('-p')) {
+    pagination = process.argv.indexOf('--pagination');
+    pagination = pagination===-1 ? process.argv.indexOf('-p') : pagination;
+    pagination = process.argv[pagination+1]!==undefined ? process.argv[pagination+1] : 0;
+    pagination = parseInt(pagination)>0 ? pagination : 0;
 }
-main(offset);
+main(offset, pagination===true||pagination==="true"||pagination==="1");

@@ -20,7 +20,7 @@ With this application you can currently:
 
 ## Next possible implementations
 - Add catches to get bugs checkpoints
-- Recognize and auto send splitted files to printer
+- ~~Recognize and auto send splitted files to printer~~
 - Change the execution command to add the route of the file you want to split
 - Add a parameter to add the route where you want to have the spplited files
 - Add a parameter to autoremove splitted files after the print
@@ -33,3 +33,7 @@ It has been coded in order to get a quick solution. It hasn't been tested in muc
 1. Split a PDF in two PDF files.
 2. Adds pagination to all pages
 3. You can set an offset of pages that will be removed before the PDF split
+
+0.0.2 (23/09/2021)
+1. Quickfixes. It only got splitted first file instead of all files that were in the "in" folder
+2. Printing function for each file

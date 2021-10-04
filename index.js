@@ -13,11 +13,16 @@ async function main(offset=0, pagination=true, split_range=[-1, -1]) {
         results.push(await create_doublesidepdf(files[f], offset, pagination, split_range).then(async res => {
             console.log('Documento '+res.name+':\n- Páginas totales: '+res.pages+'\n- Páginas del documento 1: '+res.documents[0].pages+'\n- Páginas del documento 2: '+res.documents[1].pages);
 
-            console.log('Imprimiendo archivo 2. Pulsa enter cuando haya acabado y gires los folios en la impresora.');
-            printer.print(path.join(__dirname, './out/'+res.name+'/second.pdf'));
-            await enterToContinue();
-            console.log('Imprimiendo archivo 1.');
+            if(res.pages>1) {
+                console.log('Imprimiendo archivo 2. Pulsa enter cuando haya acabado y gires los folios en la impresora.');
+                printer.print(path.join(__dirname, './out/'+res.name+'/second.pdf'));
+                await enterToContinue();
+            }
+            const a = res.documents[0].pages > res.documents[1].pages ? 'Esta cara tiene una página más, así que añade un primer folio en blanco. ' : '';
+            console.log('Imprimiendo archivo 1. '+a+'Pulsa enter cuando haya acabado');
             printer.print(path.join(__dirname, './out/'+res.name+'/first.pdf'));
+            fs.rmdir(path.join(__dirname, './out/'+res.name), () => {});
+            await enterToContinue();
         }));
     }
     console.log('Trabajo terminado. '+results.length+' ficheros divididos.');
@@ -150,4 +155,6 @@ if(process.argv.includes('--split-range')||process.argv.includes('-s')) {
 }
 
 // Falta terminar de afinar split_range
-main(offset, pagination===true||pagination==="true"||pagination==="1", split_range = [-1, -1]);
+(async () => {
+    await main(offset, pagination===true||pagination==="true"||pagination==="1", split_range = [-1, -1]);
+})();

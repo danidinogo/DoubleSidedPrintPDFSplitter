@@ -13,6 +13,9 @@ async function main(offset=0, pagination=true, split_range=[-1, -1]) {
         results.push(await create_doublesidepdf(files[f], offset, pagination, split_range).then(async res => {
             console.log('Documento '+res.name+':\n- Páginas totales: '+res.pages+'\n- Páginas del documento 1: '+res.documents[0].pages+'\n- Páginas del documento 2: '+res.documents[1].pages);
 
+            fs.unlinkSync('./in/'+files[f]);
+            console.log('Archivo de entrada eliminado');
+
             if(res.pages>1) {
                 console.log('Imprimiendo archivo 2. Pulsa enter cuando haya acabado y gires los folios en la impresora.');
                 printer.print(path.join(__dirname, './out/'+res.name+'/second.pdf'));
